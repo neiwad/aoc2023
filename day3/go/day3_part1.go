@@ -11,6 +11,15 @@ import (
 
 var isStringAlphabetic = regexp.MustCompile(`[a-z,A-Z,0-9,.]`).MatchString
 
+func convertStringToTotal(s []string, numberBuffer string) int {
+	specialCharacters := regexp.MustCompile(`[a-z,A-Z,0-9,.]`).ReplaceAllString(strings.Join(s, ""), "")
+	number, err := strconv.Atoi(numberBuffer)
+	if err == nil {
+		return len(specialCharacters) * number
+	}
+	return 0
+}
+
 func day3_part1() {
 	readFile, err := os.Open("../input.txt")
 
@@ -25,36 +34,8 @@ func day3_part1() {
 	total := 0
 
 	for fileScanner.Scan() {
-
 		lineString := fileScanner.Text()
-		line := strings.Split(lineString, "")
-
-		// For each character in the line
-		for i := 0; i < len(line); i++ {
-
-			_, err = strconv.Atoi(line[i])
-			// If it's a number
-			if err == nil {
-				number := ""
-				// Keep going until we hit a non-number
-				for j := i; j < len(line); j++ {
-					_, err = strconv.Atoi(line[j])
-					// If it's a number, add it to the number string
-					if err == nil {
-						number += string(line[j])
-					} else {
-						// If it's not a number, add the number to the line
-						for k := i; k < j; k++ {
-							line[k] = string(number)
-						}
-						i += len(number) - 1
-						break
-					}
-				}
-
-			}
-		}
-		lines = append(lines, line)
+		lines = append(lines, strings.Split(lineString, ""))
 	}
 
 	for i := 0; i < len(lines); i++ {
@@ -63,75 +44,77 @@ func day3_part1() {
 
 	for i := 0; i < len(lines); i++ {
 		for j := 0; j < len(lines[i]); j++ {
-			// If it's a special character
-			if !isStringAlphabetic(lines[i][j]) {
-				fmt.Println("Special character: ", lines[i][j])
 
-				// Top left
-				if i > 0 && j > 0 {
-					neightbour, err := strconv.Atoi(lines[i-1][j-1])
-					if err == nil {
-						fmt.Println(neightbour)
-						total += neightbour
-					}
-				}
-				// Top center
-				if i > 0 {
-					neightbour, err := strconv.Atoi(lines[i-1][j])
-					if err == nil {
-						fmt.Println(neightbour)
-						total += neightbour
-					}
-				}
-				// Top right
-				if i > 0 && j < len(lines[i])-1 {
-					neightbour, err := strconv.Atoi(lines[i-1][j+1])
-					if err == nil {
-						fmt.Println(neightbour)
-						total += neightbour
-					}
-				}
-				// Center left
-				if j > 0 {
-					neightbour, err := strconv.Atoi(lines[i][j-1])
-					if err == nil {
-						fmt.Println(neightbour)
-						total += neightbour
-					}
-				}
-				// Center right
-				if j < len(lines[i])-1 {
-					neightbour, err := strconv.Atoi(lines[i][j+1])
-					if err == nil {
-						fmt.Println(neightbour)
-						total += neightbour
-					}
-				}
-				// Bottom left
-				if i < len(lines)-1 && j > 0 {
-					neightbour, err := strconv.Atoi(lines[i+1][j-1])
-					if err == nil {
-						fmt.Println(neightbour)
-						total += neightbour
-					}
-				}
-				// Bottom center
-				if i < len(lines)-1 {
-					neightbour, err := strconv.Atoi(lines[i+1][j])
-					if err == nil {
-						fmt.Println(neightbour)
-						total += neightbour
-					}
-				}
-				// Bottom right
-				if i < len(lines)-1 && j < len(lines[i])-1 {
-					neightbour, err := strconv.Atoi(lines[i+1][j+1])
-					if err == nil {
-						fmt.Println(neightbour)
-						total += neightbour
-					}
-				}
+			numberBuffer := ""
 
+			// If it's a number
+			_, err := strconv.Atoi(lines[i][j])
+			if err == nil {
+				for k := j; k < len(lines[i]); k++ {
+					number, err := strconv.Atoi(lines[i][k])
+					// If it's a number
+					if err == nil {
+						numberBuffer = fmt.Sprintf("%s%s", numberBuffer, strconv.Itoa((number)))
+					} else {
+						// End of number sequence
+						// Check all neighbours to find special characters
+
+						// Check top
+						if i > 0 {
+							left := j
+							right := k
+							if left > 0 {
+								left = j - 1
+							}
+							if right < len(lines[i]) {
+								right = k + 1
+							}
+							topString := lines[i-1][left:right]
+							// Check number of special characters in topString
+							fmt.Println("Top: ", topString, numberBuffer)
+							total += convertStringToTotal(topString, numberBuffer)
+						}
+
+						// Check bottom
+						if i < len(lines)-1 {
+							left := j
+							right := k
+							if left > 0 {
+								left = j - 1
+							}
+							if right < len(lines[i]) {
+								right = k + 1
+							}
+							bottomString := lines[i+1][left:right]
+							// Check number of special characters in topString
+							fmt.Println("Bottom: ", bottomString, numberBuffer)
+							total += convertStringToTotal(bottomString, numberBuffer)
+						}
+
+						// Check left
+						if j > 0 {
+							left := j - 1
+							leftString := strings.Split(lines[i][left], "")
+							// Check number of special characters in topString
+							fmt.Println("Left: ", leftString, numberBuffer)
+							total += convertStringToTotal(leftString, numberBuffer)
+						}
+
+						// Check right
+						if k < len(lines[j])-1 {
+							right := k
+							rightString := strings.Split(lines[i][right], "")
+							// Check number of special characters in topString
+							fmt.Println("Right: ", rightString, numberBuffer)
+							total += convertStringToTotal(rightString, numberBuffer)
+						}
+
+						numberBuffer = ""
+						j = k
+						break
+
+					}
+				}
 			}
 		}
 	}
