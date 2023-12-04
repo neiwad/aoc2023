@@ -17,9 +17,6 @@ func convertStringToTotal(s []string, numberBuffer string) int {
 	specialCharacters := regexp.MustCompile(`[a-z,A-Z,0-9,.]`).ReplaceAllString(strings.Join(s, ""), "")
 	number, err := strconv.Atoi(numberBuffer)
 	if err == nil {
-		if len(specialCharacters)*number > 0 {
-			fmt.Println("add to total", len(specialCharacters)*number)
-		}
 		return len(specialCharacters) * number
 	}
 	return 0
@@ -38,7 +35,6 @@ func checkNeighbours(i int, j int, k int, lines [][]string) {
 		}
 		topString := lines[i-1][left:right]
 		// Check number of special characters in topString
-		fmt.Println("Top: ", topString, numberBuffer)
 		total += convertStringToTotal(topString, numberBuffer)
 	}
 
@@ -54,7 +50,6 @@ func checkNeighbours(i int, j int, k int, lines [][]string) {
 		}
 		bottomString := lines[i+1][left:right]
 		// Check number of special characters in topString
-		fmt.Println("Bottom: ", bottomString, numberBuffer)
 		total += convertStringToTotal(bottomString, numberBuffer)
 	}
 
@@ -63,7 +58,6 @@ func checkNeighbours(i int, j int, k int, lines [][]string) {
 		left := j - 1
 		leftString := strings.Split(lines[i][left], "")
 		// Check number of special characters in topString
-		fmt.Println("Left: ", leftString, numberBuffer)
 		total += convertStringToTotal(leftString, numberBuffer)
 	}
 
@@ -72,7 +66,6 @@ func checkNeighbours(i int, j int, k int, lines [][]string) {
 		right := k
 		rightString := strings.Split(lines[i][right], "")
 		// Check number of special characters in topString
-		fmt.Println("Right: ", rightString, numberBuffer)
 		total += convertStringToTotal(rightString, numberBuffer)
 	}
 }
@@ -92,10 +85,6 @@ func day3_part1() {
 	for fileScanner.Scan() {
 		lineString := fileScanner.Text()
 		lines = append(lines, strings.Split(lineString, ""))
-	}
-
-	for i := 0; i < len(lines); i++ {
-		fmt.Println(lines[i])
 	}
 
 	for i := 0; i < len(lines); i++ {
