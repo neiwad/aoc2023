@@ -70,7 +70,7 @@ func checkNeighbours(i int, j int, k int, lines [][]string) {
 	}
 }
 
-func day3_part1() {
+func main() {
 	readFile, err := os.Open("../input.txt")
 
 	if err != nil {
@@ -123,5 +123,5 @@ func day3_part1() {
 		}
 	}
 
-	fmt.Println("Day 3, Part 1: ", total)
+	fmt.Println("Day 3, Part 2: ", total)
 }
