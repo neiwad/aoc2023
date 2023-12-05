@@ -9,9 +9,16 @@ import (
 	"strings"
 )
 
+type Gear struct {
+	x      int
+	y      int
+	number int
+}
+
 var total = 0
 var numberBuffer = ""
 var isStringAlphabetic = regexp.MustCompile(`[a-z,A-Z,0-9,.]`).MatchString
+var gears = []Gear{}
 
 func convertStringToTotal(s []string, numberBuffer string) int {
 	specialCharacters := regexp.MustCompile(`[a-z,A-Z,0-9,.]`).ReplaceAllString(strings.Join(s, ""), "")
@@ -33,9 +40,15 @@ func checkNeighbours(i int, j int, k int, lines [][]string) {
 		if right < len(lines[i]) {
 			right = k + 1
 		}
-		topString := lines[i-1][left:right]
-		// Check number of special characters in topString
-		total += convertStringToTotal(topString, numberBuffer)
+		topString := strings.Join(lines[i-1][left:right], "")
+
+		// Get index of gear
+		gearIndex := strings.Index(topString, "*")
+
+		if gearIndex != -1 {
+			number, _ := strconv.Atoi(numberBuffer)
+			gears = append(gears, Gear{x: gearIndex + left, y: i - 1, number: number})
+		}
 	}
 
 	// Check bottom
@@ -48,30 +61,77 @@ func checkNeighbours(i int, j int, k int, lines [][]string) {
 		if right < len(lines[i]) {
 			right = k + 1
 		}
-		bottomString := lines[i+1][left:right]
-		// Check number of special characters in topString
-		total += convertStringToTotal(bottomString, numberBuffer)
+		bottomString := strings.Join(lines[i+1][left:right], "")
+
+		// Get index of gear
+		gearIndex := strings.Index(bottomString, "*")
+
+		if gearIndex != -1 {
+			number, _ := strconv.Atoi(numberBuffer)
+			gears = append(gears, Gear{x: gearIndex + left, y: i + 1, number: number})
+		}
 	}
 
 	// Check left
 	if j > 0 {
 		left := j - 1
-		leftString := strings.Split(lines[i][left], "")
-		// Check number of special characters in topString
-		total += convertStringToTotal(leftString, numberBuffer)
+		leftString := strings.Join(strings.Split(lines[i][left], ""), "")
+
+		gearIndex := strings.Index(leftString, "*")
+		if gearIndex != -1 {
+			number, _ := strconv.Atoi(numberBuffer)
+			gears = append(gears, Gear{x: left, y: i, number: number})
+		}
 	}
 
 	// Check right
 	if k < len(lines[i])-1 {
 		right := k
 		rightString := strings.Split(lines[i][right], "")
-		// Check number of special characters in topString
-		total += convertStringToTotal(rightString, numberBuffer)
+
+		gearIndex := strings.Index(strings.Join(rightString, ""), "*")
+		if gearIndex != -1 {
+			number, _ := strconv.Atoi(numberBuffer)
+			gears = append(gears, Gear{x: right, y: i, number: number})
+		}
 	}
 }
 
+type Key struct {
+	x int
+	y int
+}
+
+type GearTotal struct {
+	gear    Gear
+	numbers []int
+}
+
+func multiplyGears(gears []Gear) map[Key]GearTotal {
+	gearCount := make(map[Key]GearTotal)
+
+	// Count occurrences of each unique combination of x and y
+	for _, gear := range gears {
+		key := Key{gear.x, gear.y}
+
+		gt, exists := gearCount[key]
+		if exists {
+			// If the key exists, update the numbers slice
+			gt.numbers = append(gt.numbers, gear.number)
+		} else {
+			// If the key doesn't exist, create a new entry in the map
+			gt = GearTotal{gear, []int{gear.number}}
+		}
+
+		// Assign the updated or new value back to the map
+		gearCount[key] = gt
+	}
+
+	return gearCount
+}
+
 func main() {
-	readFile, err := os.Open("../input.txt")
+	readFile, err := os.Open("../../input.txt")
 
 	if err != nil {
 		fmt.Println(err)
@@ -120,6 +180,15 @@ func main() {
 				}
 
 			}
+		}
+	}
+
+	res := multiplyGears(gears)
+
+	fmt.Println(res)
+	for _, gear := range res {
+		if len(gear.numbers) == 2 {
+			total += gear.numbers[0] * gear.numbers[1]
 		}
 	}
 
