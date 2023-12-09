@@ -71,7 +71,7 @@ func checkNeighbours(i int, j int, k int, lines [][]string) {
 }
 
 func main() {
-	readFile, err := os.Open("../input.txt")
+	readFile, err := os.Open("../../input.txt")
 
 	if err != nil {
 		fmt.Println(err)
